@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>TimeSync Countdown</title>
+  <title>TimeSync — Shared Countdown Timer</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -20,26 +20,19 @@
       position: relative;
     }
 
-    /* Animated background — GOLD STANDARD: 4-color, smooth, 12s */
+    /* Animated background */
     body::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: linear-gradient(45deg,
-        rgba(102,126,234,0.7),
-        rgba(118,75,162,0.7),
-        rgba(64,224,208,0.7),
-        rgba(255,105,180,0.7)
-      );
+      background: linear-gradient(45deg, rgba(102,126,234,0.7), rgba(118,75,162,0.7), rgba(64,224,208,0.7), rgba(255,105,180,0.7));
       background-size: 400% 400%;
       animation: gradientShift 12s ease infinite;
       z-index: -1;
     }
     @keyframes gradientShift {
-      0%   { background-position: 0% 50%; }
-      25%  { background-position: 50% 50%; }
-      50%  { background-position: 100% 50%; }
-      75%  { background-position: 50% 50%; }
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
 
@@ -58,14 +51,13 @@
     .time-inputs input { text-align: center; font-weight: bold; margin-bottom: 0; }
     label { display: block; color: white; margin-bottom: 8px; font-weight: 600; text-align: left; }
 
-    /* BUTTONS — ALL USE #3498db EXCEPT TERMINATE & SHUTUP */
+    /* BUTTONS */
     button { 
       background: #3498db; color: white; border: none; padding: 18px; font-size: 1.3rem; 
       font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s;
       box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
     button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
-
     #terminateBtn { background: linear-gradient(135deg, #9b2c2c, #8a2323); margin-top: 20px; }
 
     /* TIMER DISPLAY */
@@ -76,34 +68,13 @@
     .lab { font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase; }
 
     /* QR & COPY SECTION */
-    .qr-section {
-      margin: 24px auto;
-      max-width: 220px;
-      text-align: center;
-    }
-    .qr-label {
-      color: white; font-size: 1rem; margin-bottom: 12px; font-weight: 600;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-    }
-    #qrcode {
-      background: white; border-radius: 12px; padding: 12px;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-      display: inline-block;
-    }
-    .copy-btn {
-      background: #3498db; margin-top: 16px; margin-bottom: 20px;
-      font-size: 1.2rem;
-      padding: 16px;
-      border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    }
-    .copy-btn:hover {
-      background: #2980b9;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
-    }
+    .qr-section { margin: 24px auto; max-width: 220px; text-align: center; }
+    .qr-label { color: white; font-size: 1rem; margin-bottom: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+    #qrcode { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: inline-block; }
+    .copy-btn { background: #3498db; margin-top: 16px; margin-bottom: 20px; font-size: 1.2rem; padding: 16px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
+    .copy-btn:hover { background: #2980b9; transform: translateY(-2px); }
 
-    /* END SCREEN - RECONFIGURED FOR VISIBILITY */
+    /* END SCREEN */
     #endScreen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: #0c1445; flex-direction: column; justify-content: flex-start;
@@ -111,21 +82,16 @@
     }
     #endScreen.active { display: flex; animation: flashBg 0.5s infinite; }
     @keyframes flashBg { 0% { background: #0c1445; } 50% { background: #1a237e; } 100% { background: #0c1445; } }
-
-    /* STOP BUTTON - HIGH CONTRAST & AT THE TOP */
+    
     #shutUpBtn {
       background: #f1c40f; color: #2c3e50; font-size: 1.5rem; width: 90%; max-width: 500px;
       margin-bottom: 30px; border: 4px solid white; animation: pulse 1s infinite; position: relative; z-index: 10001;
     }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-
     .end-message { font-size: 3.5rem; font-weight: 900; color: white; text-align: center; margin-bottom: 20px; }
     .emoji-area { font-size: 4rem; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-
-    .firework {
-      position: absolute; width: 6px; height: 6px; border-radius: 50%;
-      animation: explode 2s forwards; z-index: 10000;
-    }
+    
+    .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; animation: explode 2s forwards; z-index: 10000; }
     @keyframes explode { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
   </style>
 </head>
@@ -135,15 +101,15 @@
   <section id="inputScreen" class="screen active">
     <h1>⏱️ TimeSync</h1>
     <label>🎯 Timer Name or Topic (optional)</label>
-    <input type="text" id="timerTitle" placeholder="Family Call / Game Night..." maxlength="1000">
+    <input type="text" id="timerTitle" placeholder="Team Standup / Game Night..." maxlength="1000">
     <label>⏰ Duration (DD:HH:MM:SS)</label>
     <div class="time-inputs">
-      <input type="number" id="days" value="0" min="0" onkeydown="if(event.key==='Enter') startTimer()">
-      <input type="number" id="hours" value="0" min="0" onkeydown="if(event.key==='Enter') startTimer()">
-      <input type="number" id="minutes" value="0" min="0" max="59" onkeydown="if(event.key==='Enter') startTimer()">
-      <input type="number" id="seconds" value="0" min="0" max="59" onkeydown="if(event.key==='Enter') startTimer()">
+      <input type="number" id="days" value="0" min="0">
+      <input type="number" id="hours" value="0" min="0">
+      <input type="number" id="minutes" value="0" min="0" max="59">
+      <input type="number" id="seconds" value="0" min="0" max="59">
     </div>
-    <button id="startBtn" onclick="startTimer()">🚀 Start Countdown</button>
+    <button id="startBtn" onclick="initiateTimer()">🚀 Start Countdown</button>
   </section>
 
   <!-- 2. TIMER SCREEN -->
@@ -155,38 +121,33 @@
       <div class="unit"><span id="mVal" class="val">00</span><span class="lab">Mins</span></div>
       <div class="unit"><span id="sVal" class="val">00</span><span class="lab">Secs</span></div>
     </div>
-
-    <!-- QR CODE + COPY LINK -->
     <div class="qr-section">
-      <div class="qr-label">🔗 Share This Timer</div>
+      <div class="qr-label">🔗 Share This Synced Timer</div>
       <div id="qrcode"></div>
-      <button class="copy-btn" onclick="copyLink()">📋 Copy Link</button>
+      <button class="copy-btn" onclick="copyLink()">📋 Copy Synced Link</button>
     </div>
-
     <button id="terminateBtn" onclick="resetApp()">🛑 Terminate Timer</button>
   </section>
 
   <!-- 3. END SCREEN -->
   <section id="endScreen">
-    <!-- Button moved to top so user sees it instantly -->
     <button id="shutUpBtn" onclick="stopEverything()">SHUT UP — I'M JOINING NOW! 📞</button>
     <div class="end-message">🎉 IT'S TIME! 🎉</div>
     <div class="emoji-area">🎊 💥 🎇 ✨ 🎆 🌟</div>
   </section>
 
-  <!-- QRCode.js CDN -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
   <script>
-    let timerInt, alarmInt, totalSecs;
+    let timerInt, alarmInt;
+    let targetTimestamp = null; // The absolute end time in milliseconds
     let audioCtx = null;
     let isAlarmRunning = false;
 
-    // 1. Audio Setup
+    // --- AUDIO ---
     function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
-
     function playBeep() {
       if (!isAlarmRunning || !audioCtx) return;
       let osc = audioCtx.createOscillator();
@@ -196,65 +157,94 @@
       osc.start(); osc.stop(audioCtx.currentTime + 0.15);
     }
 
-    // 2. Timer Logic
-    function startTimer() {
-      initAudio();
-      let d = parseInt(document.getElementById('days').value) || 0;
-      let h = parseInt(document.getElementById('hours').value) || 0;
-      let m = parseInt(document.getElementById('minutes').value) || 0;
-      let s = parseInt(document.getElementById('seconds').value) || 0;
-      
-      totalSecs = (d * 86400) + (h * 3600) + (m * 60) + s;
+    // --- CORE TIMER LOGIC ---
+    
+    // 1. Initiated by User A (Input)
+    function initiateTimer() {
+      const d = parseInt(document.getElementById('days').value) || 0;
+      const h = parseInt(document.getElementById('hours').value) || 0;
+      const m = parseInt(document.getElementById('minutes').value) || 0;
+      const s = parseInt(document.getElementById('seconds').value) || 0;
+      const totalSecs = (d * 86400) + (h * 3600) + (m * 60) + s;
+
       if (totalSecs <= 0) return alert("Enter a valid time!");
 
-      document.getElementById('displayTitle').innerText = document.getElementById('timerTitle').value || "Countdown Timer";
+      const title = document.getElementById('timerTitle').value || "Countdown";
+      
+      // CALCULATE TARGET TIME (Current Time + Duration)
+      targetTimestamp = Date.now() + (totalSecs * 1000);
+      
+      // Update URL without reloading so sharing works
+      const newUrl = new URL(window.location);
+      newUrl.searchParams.set('target', targetTimestamp);
+      newUrl.searchParams.set('title', encodeURIComponent(title));
+      window.history.pushState({}, '', newUrl);
+
+      startVisuals(title);
+    }
+
+    // 2. Start the visual countdown loop
+    function startVisuals(title) {
+      initAudio();
+      document.getElementById('displayTitle').innerText = decodeURIComponent(title);
       document.getElementById('inputScreen').classList.remove('active');
       document.getElementById('timerScreen').classList.add('active');
 
-      // ✅ HARD RESET: Clear QR container before regenerating
+      // Generate QR Code with the SYNCED URL
       const qrcodeEl = document.getElementById('qrcode');
       qrcodeEl.innerHTML = '';
-
-      // Generate QR code for current page URL (with query string)
-      const url = window.location.href;
       new QRCode(qrcodeEl, {
-        text: url,
-        width: 220,
-        height: 220,
-        colorDark: '#667eea',
-        colorLight: '#ffffff'
+        text: window.location.href, // This now includes ?target=...
+        width: 220, height: 220,
+        colorDark: '#667eea', colorLight: '#ffffff'
       });
 
-      updateUI();
-      timerInt = setInterval(() => {
-        totalSecs--;
-        updateUI();
-        if (totalSecs <= 0) {
-          clearInterval(timerInt);
-          triggerEnd();
-        }
-      }, 1000);
+      // Clear any existing interval
+      if (timerInt) clearInterval(timerInt);
+
+      // Start the loop
+      updateTimer(); // run immediately
+      timerInt = setInterval(updateTimer, 1000);
     }
 
-    function updateUI() {
+    // 3. The Loop (Calculates remaining time based on NOW vs TARGET)
+    function updateTimer() {
+      const now = Date.now();
+      const diff = targetTimestamp - now;
+
+      if (diff <= 0) {
+        clearInterval(timerInt);
+        showZeros();
+        triggerEnd();
+        return;
+      }
+
+      const totalSecs = Math.ceil(diff / 1000);
       let d = Math.floor(totalSecs / 86400);
       let h = Math.floor((totalSecs % 86400) / 3600);
       let m = Math.floor((totalSecs % 3600) / 60);
       let s = totalSecs % 60;
+
       document.getElementById('dVal').innerText = d.toString().padStart(2, '0');
       document.getElementById('hVal').innerText = h.toString().padStart(2, '0');
       document.getElementById('mVal').innerText = m.toString().padStart(2, '0');
       document.getElementById('sVal').innerText = s.toString().padStart(2, '0');
     }
 
-    // 3. End State
+    function showZeros() {
+      ['dVal','hVal','mVal','sVal'].forEach(id => document.getElementById(id).innerText = '00');
+    }
+
+    // --- END STATE ---
     function triggerEnd() {
       document.getElementById('endScreen').classList.add('active');
       isAlarmRunning = true;
       playBeep();
       alarmInt = setInterval(playBeep, 500);
-      
-      // Fireworks
+      launchFireworks();
+    }
+
+    function launchFireworks() {
       for(let i=0; i<100; i++) {
         let fw = document.createElement('div');
         fw.className = 'firework';
@@ -266,68 +256,94 @@
         document.getElementById('endScreen').appendChild(fw);
         setTimeout(() => fw.remove(), 2000);
       }
-
-      // Auto-reset after 15s
-      setTimeout(() => {
-        if (isAlarmRunning) stopEverything();
-      }, 15000);
     }
 
-    // THE FIX: Direct, forceful stop
     function stopEverything() {
       isAlarmRunning = false;
-      clearInterval(alarmInt);
+      if (alarmInt) clearInterval(alarmInt);
+      if (timerInt) clearInterval(timerInt);
       document.getElementById('endScreen').classList.remove('active');
+      
+      // Clean URL for new timer
+      window.history.pushState({}, '', window.location.pathname);
       resetApp();
       
-      // Force kill Audio Context
-      if (audioCtx) {
-        audioCtx.close();
-        audioCtx = null; 
-      }
+      if (audioCtx) { audioCtx.close(); audioCtx = null; }
     }
 
     function resetApp() {
-      clearInterval(timerInt);
-      clearInterval(alarmInt);
+      // ✅ Stop all timers
+      if (timerInt) { clearInterval(timerInt); timerInt = null; }
+      if (alarmInt) { clearInterval(alarmInt); alarmInt = null; }
+
+      // ✅ Stop audio & clean context
       isAlarmRunning = false;
+      if (audioCtx && audioCtx.state !== 'closed') {
+        audioCtx.close();
+        audioCtx = null;
+      }
+
+      // ✅ Reset UI
       document.getElementById('timerScreen').classList.remove('active');
-      document.getElementById('endScreen').classList.remove('active');
       document.getElementById('inputScreen').classList.add('active');
-
-      // ✅ FULL RESET: Clear all timer values & inputs
-      document.getElementById('dVal').innerText = '00';
-      document.getElementById('hVal').innerText = '00';
-      document.getElementById('mVal').innerText = '00';
-      document.getElementById('sVal').innerText = '00';
+      showZeros();
       document.getElementById('timerTitle').value = '';
-      document.getElementById('days').value = '0';
-      document.getElementById('hours').value = '0';
-      document.getElementById('minutes').value = '0';
-      document.getElementById('seconds').value = '0';
-
-      // ✅ Clear QR container one more time for safety
+      ['days','hours','minutes','seconds'].forEach(id => document.getElementById(id).value = '0');
       document.getElementById('qrcode').innerHTML = '';
+
+      // ✅ Clear URL params for fresh start (optional but clean)
+      window.history.replaceState({}, '', window.location.pathname);
     }
 
-    // ✅ NEW: Copy Link Function — now matches #3498db
+
     function copyLink() {
-      const url = window.location.href;
-      navigator.clipboard.writeText(url).then(() => {
-        // Visual feedback
+      navigator.clipboard.writeText(window.location.href).then(() => {
         const btn = document.querySelector('.copy-btn');
         const originalText = btn.textContent;
         btn.textContent = '✅ Copied!';
         btn.style.background = '#2980b9';
-        setTimeout(() => {
-          btn.textContent = originalText;
-          btn.style.background = '#3498db';
-        }, 2000);
-      }).catch(err => {
-        console.error('Failed to copy: ', err);
-        alert('Failed to copy link. Please try again.');
+        setTimeout(() => { btn.textContent = originalText; btn.style.background = '#3498db'; }, 2000);
       });
     }
+
+    // --- CHECK FOR URL PARAMS ON LOAD (User B Logic) ---
+    window.onload = function() {
+      const params = new URLSearchParams(window.location.search);
+      const targetParam = params.get('target');
+      const titleParam = params.get('title');
+
+      if (targetParam) {
+        targetTimestamp = parseInt(targetParam);
+        const title = titleParam ? decodeURIComponent(titleParam) : "Shared Timer";
+        
+        // Check if time already passed
+        if (targetTimestamp > Date.now()) {
+          startVisuals(title);
+        } else {
+          // If time passed, show end screen directly? Or just zeros.
+          // Let's show the timer screen at 00:00 to indicate it finished.
+          document.getElementById('displayTitle').innerText = title;
+          document.getElementById('inputScreen').classList.remove('active');
+          document.getElementById('timerScreen').classList.add('active');
+          showZeros();
+          // Optional: Trigger end immediately if you want them to hear the alarm
+          // triggerEnd(); 
+        }
+      }
+      
+      // Enable Enter Key for inputs
+      ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
+        document.getElementById(id).addEventListener('keydown', e => {
+          if (e.key === 'Enter') {
+             const d = parseInt(document.getElementById('days').value)||0;
+             const h = parseInt(document.getElementById('hours').value)||0;
+             const m = parseInt(document.getElementById('minutes').value)||0;
+             const s = parseInt(document.getElementById('seconds').value)||0;
+             if(d+h+m+s > 0) initiateTimer();
+          }
+        });
+      });
+    };
   </script>
 </body>
 </html>
