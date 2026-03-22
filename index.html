@@ -6,6 +6,7 @@
   <title>TimeSync — Shared Countdown Timer</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
+
     body {
       font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
       min-height: 100vh;
@@ -15,7 +16,6 @@
       align-items: center;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       padding: 20px;
-      transition: background 1.2s ease;
       overflow: hidden;
       position: relative;
     }
@@ -41,50 +41,53 @@
 
     h1 { font-size: 3rem; color: white; margin-bottom: 20px; text-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
-    input { 
-      width: 100%; padding: 15px; font-size: 1.2rem; border-radius: 12px; border: none; 
+    input {
+      width: 100%; padding: 15px; font-size: 1.2rem; border-radius: 12px; border: none;
       margin-bottom: 20px; background: rgba(255,255,255,0.95); box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     .time-inputs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
     .time-inputs input { text-align: center; font-weight: bold; margin-bottom: 0; }
     label { display: block; color: white; margin-bottom: 8px; font-weight: 600; text-align: left; }
 
-    button { 
-      background: #3498db; color: white; border: none; padding: 18px; font-size: 1.3rem; 
+    button {
+      background: #3498db; color: white; border: none; padding: 18px; font-size: 1.3rem;
       font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s;
       box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     }
     button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
-    #terminateBtn { background: linear-gradient(135deg, #9b2c2c, #8a2323); margin-top: 20px; }
 
-    .timer-title { font-size: 4rem; color: white; font-weight: 800; margin-bottom: 30px; line-height: 1.1; }
+    #terminateBtn {
+      background: rgba(255,255,255,0.2); margin-top: 20px;
+      border: 2px solid rgba(255,255,255,0.5); font-size: 1.1rem;
+    }
+    #terminateBtn:hover { background: rgba(255,255,255,0.3); }
+
+    .timer-title {
+      font-size: 3.5rem; color: white; font-weight: 800;
+      margin-bottom: 30px; line-height: 1.1;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    }
     .timer-display { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
-    .unit { background: white; padding: 15px; border-radius: 15px; min-width: 80px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    .unit { background: rgba(255,255,255,0.95); padding: 15px; border-radius: 15px; min-width: 80px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
     .val { font-size: 3rem; font-weight: bold; color: #2c3e50; display: block; }
     .lab { font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase; }
 
     .qr-section { margin: 24px auto; max-width: 220px; text-align: center; }
     .qr-label { color: white; font-size: 1rem; margin-bottom: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
     #qrcode { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: inline-block; }
-    .copy-btn { background: #3498db; margin-top: 16px; margin-bottom: 20px; font-size: 1.2rem; padding: 16px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
-    .copy-btn:hover { background: #2980b9; transform: translateY(-2px); }
+    .copy-btn {
+      background: rgba(255,255,255,0.25); margin-top: 16px; margin-bottom: 20px;
+      font-size: 1.1rem; padding: 14px; border-radius: 12px;
+      border: 2px solid rgba(255,255,255,0.6);
+    }
+    .copy-btn:hover { background: rgba(255,255,255,0.35); }
 
-    /* NOTIFICATION PROMPT BANNER */
+    /* NOTIFICATION BANNER */
     #notifyBanner {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255,255,255,0.97);
-      border-radius: 16px;
-      padding: 16px 24px;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-      display: none;
-      align-items: center;
-      gap: 16px;
-      z-index: 9998;
-      max-width: 420px;
-      width: 90%;
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: rgba(255,255,255,0.97); border-radius: 16px; padding: 16px 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25); display: none; align-items: center;
+      gap: 16px; z-index: 9998; max-width: 420px; width: 90%;
       animation: slideUp 0.4s ease;
     }
     @keyframes slideUp {
@@ -92,50 +95,93 @@
       to { opacity: 1; transform: translateX(-50%) translateY(0); }
     }
     #notifyBanner p { font-size: 0.95rem; color: #2c3e50; flex: 1; text-align: left; line-height: 1.4; }
-    #notifyBanner .allow-btn {
+    .allow-btn {
       background: #667eea; color: white; border: none; padding: 10px 18px;
       border-radius: 10px; font-size: 0.9rem; font-weight: bold; cursor: pointer;
       width: auto; box-shadow: none;
     }
-    #notifyBanner .dismiss-btn {
+    .nb-dismiss {
       background: transparent; color: #999; border: none; padding: 10px;
       font-size: 0.85rem; cursor: pointer; width: auto; box-shadow: none;
       text-decoration: underline;
     }
-    #notifyBanner .allow-btn:hover { background: #5a6fd6; transform: none; }
-    #notifyBanner .dismiss-btn:hover { color: #666; transform: none; }
+    .allow-btn:hover { background: #5a6fd6; transform: none; box-shadow: none; }
+    .nb-dismiss:hover { color: #666; transform: none; box-shadow: none; }
 
     /* END SCREEN */
     #endScreen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #0c1445; flex-direction: column; justify-content: flex-start;
-      align-items: center; z-index: 9999; display: none; padding-top: 5vh;
+      display: none; flex-direction: column; justify-content: center;
+      align-items: center; z-index: 9999;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
-    #endScreen.active { display: flex; animation: flashBg 0.5s infinite; }
-    @keyframes flashBg { 0% { background: #0c1445; } 50% { background: #1a237e; } 100% { background: #0c1445; } }
-    
-    #shutUpBtn {
-      background: #f1c40f; color: #2c3e50; font-size: 1.5rem; width: 90%; max-width: 500px;
-      margin-bottom: 30px; border: 4px solid white; animation: pulse 1s infinite; position: relative; z-index: 10001;
+    #endScreen::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(45deg, rgba(102,126,234,0.7), rgba(118,75,162,0.7), rgba(64,224,208,0.7), rgba(255,105,180,0.7));
+      background-size: 400% 400%;
+      animation: gradientShift 12s ease infinite;
+      z-index: 0;
     }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-    .end-message { font-size: 3.5rem; font-weight: 900; color: white; text-align: center; margin-bottom: 20px; }
-    .emoji-area { font-size: 4rem; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
-    
-    .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; animation: explode 2s forwards; z-index: 10000; }
-    @keyframes explode { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
+    #endScreen.active { display: flex; animation: fadeIn 0.5s ease; }
 
-    /* TAB FLASH — applied to a hidden element that changes the favicon color */
-    .tab-flash { animation: tabPulse 0.8s infinite; }
+    .end-message {
+      font-size: 2.6rem; font-weight: 800; color: white;
+      text-align: center; margin-bottom: 50px;
+      text-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      z-index: 1; padding: 0 20px;
+    }
+
+    /* FLUBBER BLOB */
+    .blob-wrap {
+      position: relative; width: 200px; height: 200px;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1;
+    }
+    .blob {
+      width: 180px; height: 180px;
+      background: linear-gradient(135deg, #40E0D0 0%, #667eea 40%, #a8edea 70%, #40E0D0 100%);
+      background-size: 300% 300%;
+      animation: blobColor 4s ease infinite, blobMorph 3s ease-in-out infinite;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 8px 40px rgba(64,224,208,0.5), 0 0 0 0 rgba(64,224,208,0.4);
+    }
+    @keyframes blobColor {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+    @keyframes blobMorph {
+      0%   { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; transform: scale(1); }
+      25%  { border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; transform: scale(1.06); }
+      50%  { border-radius: 70% 30% 50% 50% / 40% 70% 30% 60%; transform: scale(0.96); }
+      75%  { border-radius: 30% 70% 60% 40% / 70% 30% 70% 30%; transform: scale(1.04); }
+      100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; transform: scale(1); }
+    }
+    .blob-text {
+      color: white; font-size: 1.1rem; font-weight: 700;
+      text-align: center; pointer-events: none;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    }
+    .blob:hover {
+      box-shadow: 0 12px 50px rgba(64,224,208,0.7);
+      animation: blobColor 2s ease infinite, blobMorphFast 0.8s ease-in-out infinite;
+    }
+    @keyframes blobMorphFast {
+      0%   { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; transform: scale(1.06); }
+      50%  { border-radius: 40% 60% 30% 70% / 60% 40% 60% 40%; transform: scale(1.12); }
+      100% { border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%; transform: scale(1.06); }
+    }
   </style>
 </head>
 <body>
 
-  <!-- NOTIFICATION PERMISSION BANNER -->
+  <!-- NOTIFICATION BANNER -->
   <div id="notifyBanner">
     <p>🔔 Want a nudge when time's up — even if you switch tabs?</p>
     <button class="allow-btn" onclick="requestNotifyPermission()">Allow</button>
-    <button class="dismiss-btn" onclick="dismissNotifyBanner()">No thanks</button>
+    <button class="nb-dismiss" onclick="dismissNotifyBanner()">No thanks</button>
   </div>
 
   <!-- 1. INPUT SCREEN -->
@@ -143,7 +189,7 @@
     <h1>⏱️ TimeSync</h1>
     <label>🎯 Timer Name or Topic (optional)</label>
     <input type="text" id="timerTitle" placeholder="Team Standup / Game Night..." maxlength="1000">
-    <label>⏰ Duration (DD:HH:MM:SS)</label>
+    <label>⏰ Duration (DD : HH : MM : SS)</label>
     <div class="time-inputs">
       <input type="number" id="days" value="0" min="0">
       <input type="number" id="hours" value="0" min="0">
@@ -167,18 +213,20 @@
       <div id="qrcode"></div>
       <button class="copy-btn" onclick="copyLink()">📋 Copy Synced Link</button>
     </div>
-    <button id="terminateBtn" onclick="resetApp()">🛑 Terminate Timer</button>
+    <button id="terminateBtn" onclick="resetApp()">🛑 End Timer</button>
   </section>
 
   <!-- 3. END SCREEN -->
   <section id="endScreen">
-    <button id="shutUpBtn" onclick="stopEverything()">SHUT UP — I'M JOINING NOW! 📞</button>
-    <div class="end-message">🎉 IT'S TIME! 🎉</div>
-    <div class="emoji-area">🎊 💥 🎇 ✨ 🎆 🌟</div>
+    <div class="end-message">Got it — I'm on my way! 📞</div>
+    <div class="blob-wrap">
+      <div class="blob" onclick="stopEverything()">
+        <div class="blob-text">Stop</div>
+      </div>
+    </div>
   </section>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
   <script>
     let timerInt, alarmInt;
     let targetTimestamp = null;
@@ -187,66 +235,51 @@
     let swRegistration = null;
     let notificationScheduled = false;
     let originalTitle = document.title;
+    let tabFlashInt = null;
 
-    // ── SERVICE WORKER REGISTRATION ──
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('/sw.js')
         .then(reg => { swRegistration = reg; })
-        .catch(err => console.log('SW registration failed:', err));
+        .catch(err => console.log('SW:', err));
     }
 
-    // ── NOTIFICATION BANNER LOGIC ──
-    function showNotifyBanner() {
-      // Only show if notifications are supported and not already granted/denied
-      if (!('Notification' in window)) return;
-      if (Notification.permission === 'granted' || Notification.permission === 'denied') return;
-      document.getElementById('notifyBanner').style.display = 'flex';
-    }
-
-    function dismissNotifyBanner() {
-      document.getElementById('notifyBanner').style.display = 'none';
-    }
-
-    function requestNotifyPermission() {
-      dismissNotifyBanner();
-      Notification.requestPermission().then(permission => {
-        if (permission === 'granted' && !notificationScheduled) {
-          scheduleNotification();
-        }
-      });
-    }
-
-    function scheduleNotification() {
-      if (!swRegistration || !targetTimestamp) return;
-      const delay = targetTimestamp - Date.now();
-      if (delay <= 0) return;
-
-      const title = document.getElementById('displayTitle').innerText || 'Your timer';
-      const notifTitle = `⏰ ${title} — Time to join!`;
-
-      swRegistration.active.postMessage({
-        type: 'SCHEDULE_NOTIFICATION',
-        title: notifTitle,
-        delay: delay
-      });
-      notificationScheduled = true;
-    }
-
-    // ── TAB FLASH when timer ends ──
-    let tabFlashInt = null;
     function startTabFlash() {
-      let state = false;
-      tabFlashInt = setInterval(() => {
-        document.title = state ? '🔴 TIME\'S UP! — TimeSync' : '🟡 TIME\'S UP! — TimeSync';
-        state = !state;
-      }, 600);
+      const msgs = ['🔴 ⏰ TIME IS UP — TimeSync', '⚡ JOIN NOW — TimeSync ⚡'];
+      let i = 0;
+      tabFlashInt = setInterval(() => { document.title = msgs[i++ % msgs.length]; }, 700);
     }
     function stopTabFlash() {
       if (tabFlashInt) clearInterval(tabFlashInt);
       document.title = originalTitle;
     }
 
-    // ── AUDIO ──
+    function showNotifyBanner() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission !== 'default') return;
+      document.getElementById('notifyBanner').style.display = 'flex';
+    }
+    function dismissNotifyBanner() {
+      document.getElementById('notifyBanner').style.display = 'none';
+    }
+    function requestNotifyPermission() {
+      dismissNotifyBanner();
+      Notification.requestPermission().then(p => {
+        if (p === 'granted' && !notificationScheduled) scheduleNotification();
+      });
+    }
+    function scheduleNotification() {
+      if (!swRegistration || !targetTimestamp) return;
+      const delay = targetTimestamp - Date.now();
+      if (delay <= 0) return;
+      const title = document.getElementById('displayTitle').innerText || 'Your timer';
+      swRegistration.active.postMessage({
+        type: 'SCHEDULE_NOTIFICATION',
+        title: `⏰ ${title} — Time to join!`,
+        delay
+      });
+      notificationScheduled = true;
+    }
+
     function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -259,24 +292,19 @@
       osc.start(); osc.stop(audioCtx.currentTime + 0.15);
     }
 
-    // ── CORE TIMER LOGIC ──
     function initiateTimer() {
       const d = parseInt(document.getElementById('days').value) || 0;
       const h = parseInt(document.getElementById('hours').value) || 0;
       const m = parseInt(document.getElementById('minutes').value) || 0;
       const s = parseInt(document.getElementById('seconds').value) || 0;
-      const totalSecs = (d * 86400) + (h * 3600) + (m * 60) + s;
-
-      if (totalSecs <= 0) return alert("Enter a valid time!");
-
+      const total = (d*86400)+(h*3600)+(m*60)+s;
+      if (total <= 0) return alert("Please enter a valid time.");
       const title = document.getElementById('timerTitle').value || "Countdown";
-      targetTimestamp = Date.now() + (totalSecs * 1000);
-
-      const newUrl = new URL(window.location);
-      newUrl.searchParams.set('target', targetTimestamp);
-      newUrl.searchParams.set('title', encodeURIComponent(title));
-      window.history.pushState({}, '', newUrl);
-
+      targetTimestamp = Date.now() + (total * 1000);
+      const u = new URL(window.location);
+      u.searchParams.set('target', targetTimestamp);
+      u.searchParams.set('title', encodeURIComponent(title));
+      window.history.pushState({}, '', u);
       startVisuals(title);
     }
 
@@ -285,49 +313,24 @@
       document.getElementById('displayTitle').innerText = decodeURIComponent(title);
       document.getElementById('inputScreen').classList.remove('active');
       document.getElementById('timerScreen').classList.add('active');
-
-      const qrcodeEl = document.getElementById('qrcode');
-      qrcodeEl.innerHTML = '';
-      new QRCode(qrcodeEl, {
-        text: window.location.href,
-        width: 220, height: 220,
-        colorDark: '#667eea', colorLight: '#ffffff'
-      });
-
+      const el = document.getElementById('qrcode');
+      el.innerHTML = '';
+      new QRCode(el, { text: window.location.href, width: 200, height: 200, colorDark: '#667eea', colorLight: '#ffffff' });
       if (timerInt) clearInterval(timerInt);
       updateTimer();
       timerInt = setInterval(updateTimer, 1000);
-
-      // Show notification banner 3 seconds after timer starts
       setTimeout(showNotifyBanner, 3000);
-
-      // If already granted, schedule silently
-      if (Notification.permission === 'granted') {
-        scheduleNotification();
-      }
+      if (Notification.permission === 'granted') scheduleNotification();
     }
 
     function updateTimer() {
-      const now = Date.now();
-      const diff = targetTimestamp - now;
-
-      if (diff <= 0) {
-        clearInterval(timerInt);
-        showZeros();
-        triggerEnd();
-        return;
-      }
-
-      const totalSecs = Math.ceil(diff / 1000);
-      let d = Math.floor(totalSecs / 86400);
-      let h = Math.floor((totalSecs % 86400) / 3600);
-      let m = Math.floor((totalSecs % 3600) / 60);
-      let s = totalSecs % 60;
-
-      document.getElementById('dVal').innerText = d.toString().padStart(2, '0');
-      document.getElementById('hVal').innerText = h.toString().padStart(2, '0');
-      document.getElementById('mVal').innerText = m.toString().padStart(2, '0');
-      document.getElementById('sVal').innerText = s.toString().padStart(2, '0');
+      const diff = targetTimestamp - Date.now();
+      if (diff <= 0) { clearInterval(timerInt); showZeros(); triggerEnd(); return; }
+      const t = Math.ceil(diff / 1000);
+      document.getElementById('dVal').innerText = String(Math.floor(t/86400)).padStart(2,'0');
+      document.getElementById('hVal').innerText = String(Math.floor((t%86400)/3600)).padStart(2,'0');
+      document.getElementById('mVal').innerText = String(Math.floor((t%3600)/60)).padStart(2,'0');
+      document.getElementById('sVal').innerText = String(t%60).padStart(2,'0');
     }
 
     function showZeros() {
@@ -339,22 +342,7 @@
       isAlarmRunning = true;
       playBeep();
       alarmInt = setInterval(playBeep, 500);
-      launchFireworks();
-      startTabFlash(); // Flash the browser tab
-    }
-
-    function launchFireworks() {
-      for(let i=0; i<100; i++) {
-        let fw = document.createElement('div');
-        fw.className = 'firework';
-        fw.style.left = Math.random() * 100 + '%';
-        fw.style.top = Math.random() * 100 + '%';
-        fw.style.backgroundColor = `hsl(${Math.random()*360}, 100%, 50%)`;
-        fw.style.setProperty('--tx', (Math.random()-0.5)*400 + 'px');
-        fw.style.setProperty('--ty', (Math.random()-0.5)*400 + 'px');
-        document.getElementById('endScreen').appendChild(fw);
-        setTimeout(() => fw.remove(), 2000);
-      }
+      startTabFlash();
     }
 
     function stopEverything() {
@@ -371,8 +359,7 @@
     function resetApp() {
       if (timerInt) { clearInterval(timerInt); timerInt = null; }
       if (alarmInt) { clearInterval(alarmInt); alarmInt = null; }
-      isAlarmRunning = false;
-      notificationScheduled = false;
+      isAlarmRunning = false; notificationScheduled = false;
       stopTabFlash();
       if (audioCtx && audioCtx.state !== 'closed') { audioCtx.close(); audioCtx = null; }
       document.getElementById('timerScreen').classList.remove('active');
@@ -385,46 +372,36 @@
     }
 
     function copyLink() {
-      // Generate a clean readable link
-      const url = new URL(window.location.href);
-      const cleanUrl = url.origin + url.pathname + url.search;
-      
-      navigator.clipboard.writeText(cleanUrl).then(() => {
+      navigator.clipboard.writeText(window.location.href).then(() => {
         const btn = document.querySelector('.copy-btn');
-        const originalText = btn.textContent;
+        const orig = btn.textContent;
         btn.textContent = '✅ Copied!';
-        setTimeout(() => { btn.textContent = originalText; }, 2000);
+        setTimeout(() => { btn.textContent = orig; }, 2000);
       });
     }
 
-    // ── LOAD FROM URL PARAMS (User B joining via shared link) ──
     window.onload = function() {
-      const params = new URLSearchParams(window.location.search);
-      const targetParam = params.get('target');
-      const titleParam = params.get('title');
-
-      if (targetParam) {
-        targetTimestamp = parseInt(targetParam);
-        const title = titleParam ? decodeURIComponent(titleParam) : "Shared Timer";
-        
-        if (targetTimestamp > Date.now()) {
-          startVisuals(title);
-        } else {
+      const p = new URLSearchParams(window.location.search);
+      const tp = p.get('target'), ti = p.get('title');
+      if (tp) {
+        targetTimestamp = parseInt(tp);
+        const title = ti ? decodeURIComponent(ti) : "Shared Timer";
+        if (targetTimestamp > Date.now()) { startVisuals(title); }
+        else {
           document.getElementById('displayTitle').innerText = title;
           document.getElementById('inputScreen').classList.remove('active');
           document.getElementById('timerScreen').classList.add('active');
           showZeros();
         }
       }
-
-      ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
+      ['days','hours','minutes','seconds'].forEach(id => {
         document.getElementById(id).addEventListener('keydown', e => {
           if (e.key === 'Enter') {
-            const d = parseInt(document.getElementById('days').value)||0;
-            const h = parseInt(document.getElementById('hours').value)||0;
-            const m = parseInt(document.getElementById('minutes').value)||0;
-            const s = parseInt(document.getElementById('seconds').value)||0;
-            if(d+h+m+s > 0) initiateTimer();
+            const d=parseInt(document.getElementById('days').value)||0;
+            const h=parseInt(document.getElementById('hours').value)||0;
+            const m=parseInt(document.getElementById('minutes').value)||0;
+            const s=parseInt(document.getElementById('seconds').value)||0;
+            if(d+h+m+s>0) initiateTimer();
           }
         });
       });
