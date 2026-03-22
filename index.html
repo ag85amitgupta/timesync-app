@@ -183,6 +183,13 @@
     <button class="nb-dismiss" onclick="dismissNotifyBanner()">No thanks</button>
   </div>
 
+  <!-- TEST NOTIFICATION BUTTON (remove after testing) -->
+  <div id="testNotifBtn" style="position:fixed;top:16px;right:16px;z-index:9999;display:none;">
+    <button onclick="testNotification()" style="width:auto;padding:10px 16px;font-size:0.85rem;border-radius:10px;background:rgba(255,255,255,0.25);border:2px solid rgba(255,255,255,0.6);color:white;font-weight:600;">
+      🔔 Test Notification
+    </button>
+  </div>
+
   <!-- 1. INPUT SCREEN -->
   <section id="inputScreen" class="screen active">
     <h1>⏱️ TimeSync</h1>
@@ -242,6 +249,20 @@
         .catch(err => console.log('SW:', err));
     }
 
+    function testNotification() {
+      if (Notification.permission === 'granted') {
+        new Notification('⏰ TimeSync Test — It works!', {
+          body: 'Notifications are working correctly.',
+          tag: 'timesync-test',
+          requireInteraction: false
+        });
+      } else {
+        Notification.requestPermission().then(p => {
+          if (p === 'granted') testNotification();
+        });
+      }
+    }
+
     function startTabFlash() {
       const msgs = ['🔴 ⏰ TIME IS UP — TimeSync', '⚡ JOIN NOW — TimeSync ⚡'];
       let i = 0;
@@ -284,19 +305,38 @@
       });
     }
     function scheduleNotification() {
-      if (!targetTimestamp) return;
+      if (!targetTimestamp || notificationScheduled) return;
       const delay = targetTimestamp - Date.now();
       if (delay <= 0) return;
       const title = document.getElementById('displayTitle').innerText || 'Your timer';
-      const msg = { type: 'SCHEDULE_NOTIFICATION', title: `⏰ ${title} — Time to join!`, delay };
-      // Wait for SW to be fully active before posting
-      navigator.serviceWorker.ready.then(reg => {
-        swRegistration = reg;
-        if (reg.active) {
-          reg.active.postMessage(msg);
-          notificationScheduled = true;
+      const notifTitle = `⏰ ${title} — Time to join!`;
+      notificationScheduled = true;
+
+      // PRIMARY: try service worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(reg => {
+          if (reg.active) {
+            reg.active.postMessage({ type: 'SCHEDULE_NOTIFICATION', title: notifTitle, delay });
+          }
+        }).catch(() => {});
+      }
+
+      // FALLBACK: fire directly from page using setTimeout
+      // Works when tab is open, catches cases where SW fails
+      setTimeout(() => {
+        if (Notification.permission === 'granted') {
+          try {
+            new Notification(notifTitle, {
+              body: 'Tap to open TimeSync',
+              icon: '/icon.png',
+              tag: 'timesync-alert',
+              requireInteraction: true
+            });
+          } catch(e) {
+            console.log('Notification error:', e);
+          }
         }
-      }).catch(e => console.log('SW not ready:', e));
+      }, delay);
     }
 
     function initAudio() {
@@ -332,6 +372,7 @@
       document.getElementById('displayTitle').innerText = decodeURIComponent(title);
       document.getElementById('inputScreen').classList.remove('active');
       document.getElementById('timerScreen').classList.add('active');
+      document.getElementById('testNotifBtn').style.display = 'block';
       const el = document.getElementById('qrcode');
       el.innerHTML = '';
       new QRCode(el, { text: window.location.href, width: 200, height: 200, colorDark: '#667eea', colorLight: '#ffffff' });
