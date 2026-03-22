@@ -20,7 +20,6 @@
       position: relative;
     }
 
-    /* Animated background */
     body::before {
       content: '';
       position: absolute;
@@ -42,7 +41,6 @@
 
     h1 { font-size: 3rem; color: white; margin-bottom: 20px; text-shadow: 0 4px 8px rgba(0,0,0,0.3); }
 
-    /* INPUTS */
     input { 
       width: 100%; padding: 15px; font-size: 1.2rem; border-radius: 12px; border: none; 
       margin-bottom: 20px; background: rgba(255,255,255,0.95); box-shadow: 0 4px 15px rgba(0,0,0,0.2);
@@ -51,7 +49,6 @@
     .time-inputs input { text-align: center; font-weight: bold; margin-bottom: 0; }
     label { display: block; color: white; margin-bottom: 8px; font-weight: 600; text-align: left; }
 
-    /* BUTTONS */
     button { 
       background: #3498db; color: white; border: none; padding: 18px; font-size: 1.3rem; 
       font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; transition: 0.3s;
@@ -60,19 +57,53 @@
     button:hover { transform: translateY(-3px); box-shadow: 0 6px 20px rgba(0,0,0,0.25); }
     #terminateBtn { background: linear-gradient(135deg, #9b2c2c, #8a2323); margin-top: 20px; }
 
-    /* TIMER DISPLAY */
     .timer-title { font-size: 4rem; color: white; font-weight: 800; margin-bottom: 30px; line-height: 1.1; }
     .timer-display { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-bottom: 30px; }
     .unit { background: white; padding: 15px; border-radius: 15px; min-width: 80px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
     .val { font-size: 3rem; font-weight: bold; color: #2c3e50; display: block; }
     .lab { font-size: 0.9rem; color: #7f8c8d; text-transform: uppercase; }
 
-    /* QR & COPY SECTION */
     .qr-section { margin: 24px auto; max-width: 220px; text-align: center; }
     .qr-label { color: white; font-size: 1rem; margin-bottom: 12px; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
     #qrcode { background: white; border-radius: 12px; padding: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); display: inline-block; }
     .copy-btn { background: #3498db; margin-top: 16px; margin-bottom: 20px; font-size: 1.2rem; padding: 16px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); }
     .copy-btn:hover { background: #2980b9; transform: translateY(-2px); }
+
+    /* NOTIFICATION PROMPT BANNER */
+    #notifyBanner {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255,255,255,0.97);
+      border-radius: 16px;
+      padding: 16px 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+      display: none;
+      align-items: center;
+      gap: 16px;
+      z-index: 9998;
+      max-width: 420px;
+      width: 90%;
+      animation: slideUp 0.4s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    #notifyBanner p { font-size: 0.95rem; color: #2c3e50; flex: 1; text-align: left; line-height: 1.4; }
+    #notifyBanner .allow-btn {
+      background: #667eea; color: white; border: none; padding: 10px 18px;
+      border-radius: 10px; font-size: 0.9rem; font-weight: bold; cursor: pointer;
+      width: auto; box-shadow: none;
+    }
+    #notifyBanner .dismiss-btn {
+      background: transparent; color: #999; border: none; padding: 10px;
+      font-size: 0.85rem; cursor: pointer; width: auto; box-shadow: none;
+      text-decoration: underline;
+    }
+    #notifyBanner .allow-btn:hover { background: #5a6fd6; transform: none; }
+    #notifyBanner .dismiss-btn:hover { color: #666; transform: none; }
 
     /* END SCREEN */
     #endScreen {
@@ -93,9 +124,19 @@
     
     .firework { position: absolute; width: 6px; height: 6px; border-radius: 50%; animation: explode 2s forwards; z-index: 10000; }
     @keyframes explode { 0% { transform: translate(0,0); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)); opacity: 0; } }
+
+    /* TAB FLASH — applied to a hidden element that changes the favicon color */
+    .tab-flash { animation: tabPulse 0.8s infinite; }
   </style>
 </head>
 <body>
+
+  <!-- NOTIFICATION PERMISSION BANNER -->
+  <div id="notifyBanner">
+    <p>🔔 Want a nudge when time's up — even if you switch tabs?</p>
+    <button class="allow-btn" onclick="requestNotifyPermission()">Allow</button>
+    <button class="dismiss-btn" onclick="dismissNotifyBanner()">No thanks</button>
+  </div>
 
   <!-- 1. INPUT SCREEN -->
   <section id="inputScreen" class="screen active">
@@ -140,11 +181,72 @@
 
   <script>
     let timerInt, alarmInt;
-    let targetTimestamp = null; // The absolute end time in milliseconds
+    let targetTimestamp = null;
     let audioCtx = null;
     let isAlarmRunning = false;
+    let swRegistration = null;
+    let notificationScheduled = false;
+    let originalTitle = document.title;
 
-    // --- AUDIO ---
+    // ── SERVICE WORKER REGISTRATION ──
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => { swRegistration = reg; })
+        .catch(err => console.log('SW registration failed:', err));
+    }
+
+    // ── NOTIFICATION BANNER LOGIC ──
+    function showNotifyBanner() {
+      // Only show if notifications are supported and not already granted/denied
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'granted' || Notification.permission === 'denied') return;
+      document.getElementById('notifyBanner').style.display = 'flex';
+    }
+
+    function dismissNotifyBanner() {
+      document.getElementById('notifyBanner').style.display = 'none';
+    }
+
+    function requestNotifyPermission() {
+      dismissNotifyBanner();
+      Notification.requestPermission().then(permission => {
+        if (permission === 'granted' && !notificationScheduled) {
+          scheduleNotification();
+        }
+      });
+    }
+
+    function scheduleNotification() {
+      if (!swRegistration || !targetTimestamp) return;
+      const delay = targetTimestamp - Date.now();
+      if (delay <= 0) return;
+
+      const title = document.getElementById('displayTitle').innerText || 'Your timer';
+      const notifTitle = `⏰ ${title} — Time to join!`;
+
+      swRegistration.active.postMessage({
+        type: 'SCHEDULE_NOTIFICATION',
+        title: notifTitle,
+        delay: delay
+      });
+      notificationScheduled = true;
+    }
+
+    // ── TAB FLASH when timer ends ──
+    let tabFlashInt = null;
+    function startTabFlash() {
+      let state = false;
+      tabFlashInt = setInterval(() => {
+        document.title = state ? '🔴 TIME\'S UP! — TimeSync' : '🟡 TIME\'S UP! — TimeSync';
+        state = !state;
+      }, 600);
+    }
+    function stopTabFlash() {
+      if (tabFlashInt) clearInterval(tabFlashInt);
+      document.title = originalTitle;
+    }
+
+    // ── AUDIO ──
     function initAudio() {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     }
@@ -157,9 +259,7 @@
       osc.start(); osc.stop(audioCtx.currentTime + 0.15);
     }
 
-    // --- CORE TIMER LOGIC ---
-    
-    // 1. Initiated by User A (Input)
+    // ── CORE TIMER LOGIC ──
     function initiateTimer() {
       const d = parseInt(document.getElementById('days').value) || 0;
       const h = parseInt(document.getElementById('hours').value) || 0;
@@ -170,11 +270,8 @@
       if (totalSecs <= 0) return alert("Enter a valid time!");
 
       const title = document.getElementById('timerTitle').value || "Countdown";
-      
-      // CALCULATE TARGET TIME (Current Time + Duration)
       targetTimestamp = Date.now() + (totalSecs * 1000);
-      
-      // Update URL without reloading so sharing works
+
       const newUrl = new URL(window.location);
       newUrl.searchParams.set('target', targetTimestamp);
       newUrl.searchParams.set('title', encodeURIComponent(title));
@@ -183,31 +280,33 @@
       startVisuals(title);
     }
 
-    // 2. Start the visual countdown loop
     function startVisuals(title) {
       initAudio();
       document.getElementById('displayTitle').innerText = decodeURIComponent(title);
       document.getElementById('inputScreen').classList.remove('active');
       document.getElementById('timerScreen').classList.add('active');
 
-      // Generate QR Code with the SYNCED URL
       const qrcodeEl = document.getElementById('qrcode');
       qrcodeEl.innerHTML = '';
       new QRCode(qrcodeEl, {
-        text: window.location.href, // This now includes ?target=...
+        text: window.location.href,
         width: 220, height: 220,
         colorDark: '#667eea', colorLight: '#ffffff'
       });
 
-      // Clear any existing interval
       if (timerInt) clearInterval(timerInt);
-
-      // Start the loop
-      updateTimer(); // run immediately
+      updateTimer();
       timerInt = setInterval(updateTimer, 1000);
+
+      // Show notification banner 3 seconds after timer starts
+      setTimeout(showNotifyBanner, 3000);
+
+      // If already granted, schedule silently
+      if (Notification.permission === 'granted') {
+        scheduleNotification();
+      }
     }
 
-    // 3. The Loop (Calculates remaining time based on NOW vs TARGET)
     function updateTimer() {
       const now = Date.now();
       const diff = targetTimestamp - now;
@@ -235,13 +334,13 @@
       ['dVal','hVal','mVal','sVal'].forEach(id => document.getElementById(id).innerText = '00');
     }
 
-    // --- END STATE ---
     function triggerEnd() {
       document.getElementById('endScreen').classList.add('active');
       isAlarmRunning = true;
       playBeep();
       alarmInt = setInterval(playBeep, 500);
       launchFireworks();
+      startTabFlash(); // Flash the browser tab
     }
 
     function launchFireworks() {
@@ -262,51 +361,43 @@
       isAlarmRunning = false;
       if (alarmInt) clearInterval(alarmInt);
       if (timerInt) clearInterval(timerInt);
+      stopTabFlash();
       document.getElementById('endScreen').classList.remove('active');
-      
-      // Clean URL for new timer
       window.history.pushState({}, '', window.location.pathname);
       resetApp();
-      
       if (audioCtx) { audioCtx.close(); audioCtx = null; }
     }
 
     function resetApp() {
-      // ✅ Stop all timers
       if (timerInt) { clearInterval(timerInt); timerInt = null; }
       if (alarmInt) { clearInterval(alarmInt); alarmInt = null; }
-
-      // ✅ Stop audio & clean context
       isAlarmRunning = false;
-      if (audioCtx && audioCtx.state !== 'closed') {
-        audioCtx.close();
-        audioCtx = null;
-      }
-
-      // ✅ Reset UI
+      notificationScheduled = false;
+      stopTabFlash();
+      if (audioCtx && audioCtx.state !== 'closed') { audioCtx.close(); audioCtx = null; }
       document.getElementById('timerScreen').classList.remove('active');
       document.getElementById('inputScreen').classList.add('active');
       showZeros();
       document.getElementById('timerTitle').value = '';
       ['days','hours','minutes','seconds'].forEach(id => document.getElementById(id).value = '0');
       document.getElementById('qrcode').innerHTML = '';
-
-      // ✅ Clear URL params for fresh start (optional but clean)
       window.history.replaceState({}, '', window.location.pathname);
     }
 
-
     function copyLink() {
-      navigator.clipboard.writeText(window.location.href).then(() => {
+      // Generate a clean readable link
+      const url = new URL(window.location.href);
+      const cleanUrl = url.origin + url.pathname + url.search;
+      
+      navigator.clipboard.writeText(cleanUrl).then(() => {
         const btn = document.querySelector('.copy-btn');
         const originalText = btn.textContent;
         btn.textContent = '✅ Copied!';
-        btn.style.background = '#2980b9';
-        setTimeout(() => { btn.textContent = originalText; btn.style.background = '#3498db'; }, 2000);
+        setTimeout(() => { btn.textContent = originalText; }, 2000);
       });
     }
 
-    // --- CHECK FOR URL PARAMS ON LOAD (User B Logic) ---
+    // ── LOAD FROM URL PARAMS (User B joining via shared link) ──
     window.onload = function() {
       const params = new URLSearchParams(window.location.search);
       const targetParam = params.get('target');
@@ -316,30 +407,24 @@
         targetTimestamp = parseInt(targetParam);
         const title = titleParam ? decodeURIComponent(titleParam) : "Shared Timer";
         
-        // Check if time already passed
         if (targetTimestamp > Date.now()) {
           startVisuals(title);
         } else {
-          // If time passed, show end screen directly? Or just zeros.
-          // Let's show the timer screen at 00:00 to indicate it finished.
           document.getElementById('displayTitle').innerText = title;
           document.getElementById('inputScreen').classList.remove('active');
           document.getElementById('timerScreen').classList.add('active');
           showZeros();
-          // Optional: Trigger end immediately if you want them to hear the alarm
-          // triggerEnd(); 
         }
       }
-      
-      // Enable Enter Key for inputs
+
       ['days', 'hours', 'minutes', 'seconds'].forEach(id => {
         document.getElementById(id).addEventListener('keydown', e => {
           if (e.key === 'Enter') {
-             const d = parseInt(document.getElementById('days').value)||0;
-             const h = parseInt(document.getElementById('hours').value)||0;
-             const m = parseInt(document.getElementById('minutes').value)||0;
-             const s = parseInt(document.getElementById('seconds').value)||0;
-             if(d+h+m+s > 0) initiateTimer();
+            const d = parseInt(document.getElementById('days').value)||0;
+            const h = parseInt(document.getElementById('hours').value)||0;
+            const m = parseInt(document.getElementById('minutes').value)||0;
+            const s = parseInt(document.getElementById('seconds').value)||0;
+            if(d+h+m+s > 0) initiateTimer();
           }
         });
       });
